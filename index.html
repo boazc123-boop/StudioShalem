@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="he">
+
+<head>
+
+<meta charset="UTF-8">
+<title>סטודיו לקרמיקה</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#f6f2ec;
+margin:0
+}
+
+h1{
+padding:20px
+}
+
+#gallery{
+display:grid;
+grid-template-columns:repeat(auto-fit,250px);
+gap:20px;
+justify-content:center;
+padding:30px
+}
+
+.product{
+cursor:pointer
+}
+
+.product img{
+width:100%;
+height:250px;
+object-fit:cover;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1)
+}
+
+.name{
+margin-top:8px;
+font-size:18px
+}
+
+.status{
+position:absolute;
+padding:5px 10px;
+border-radius:5px;
+top:10px;
+right:10px;
+color:white;
+font-size:14px
+}
+
+.instock{
+background:green
+}
+
+.outstock{
+background:red
+}
+
+.card{
+position:relative
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.85);
+color:white;
+padding-top:60px
+}
+
+.modal img{
+max-width:400px;
+border-radius:10px
+}
+
+#close{
+position:absolute;
+top:20px;
+right:40px;
+font-size:40px;
+cursor:pointer
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<button onclick="adminLogin()">כניסת מנהל</button>
+<button id="addBtn" style="display:none" onclick="showAddForm()">הוסף מוצר</button>
+
+<h1>סטודיו לקרמיקה</h1>
+
+<div id="gallery"></div>
+
+
+<div id="modal" class="modal">
+
+<span id="close">✕</span>
+
+<img id="modal-img">
+
+<h2 id="modal-name"></h2>
+
+<p id="modal-desc"></p>
+
+<h3 id="modal-price"></h3>
+
+<div id="adminArea"></div>
+
+</div>
+
+
+<div id="addForm" style="display:none;margin:20px">
+
+<h3>הוספת מוצר</h3>
+
+<input id="newName" placeholder="שם מוצר"><br><br>
+
+<input id="newPrice" type="number" placeholder="מחיר"><br><br>
+
+<textarea id="newDesc" placeholder="תיאור"></textarea><br><br>
+
+<input type="file" id="newImage"><br><br>
+
+<button onclick="saveNewProduct()">שמור מוצר</button>
+
+</div>
+
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs,
+doc,
+updateDoc,
+addDoc
+}
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyCqi32tyPHflqnqvTZfBPf_SPqQdvKrq_A",
+authDomain:"studioshalem-ba925.firebaseapp.com",
+projectId:"studioshalem-ba925",
+storageBucket:"studioshalem-ba925.firebasestorage.app",
+messagingSenderId:"488962069403",
+appId:"1:488962069403:web:83e7eb50756cf40436873e"
+
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+
+const ADMIN_PASSWORD="1234";
+
+let adminMode=false;
+let products=[];
+
+
+
+let modal=document.getElementById("modal");
+let modalImg=document.getElementById("modal-img");
+let modalName=document.getElementById("modal-name");
+let modalDesc=document.getElementById("modal-desc");
+let modalPrice=document.getElementById("modal-price");
+let adminArea=document.getElementById("adminArea");
+
+document.getElementById("close").onclick=()=>modal.style.display="none";
+
+
+
+window.adminLogin=function(){
+
+let pass=prompt("סיסמת מנהל");
+
+if(pass===ADMIN_PASSWORD){
+
+adminMode=true;
+alert("מצב מנהל הופעל");
+document.getElementById("addBtn").style.display="inline";
+
+}else{
+
+alert("סיסמה שגויה");
+
+}
+
+}
+
+
+
+async function loadProducts(){
+
+const snapshot=await getDocs(collection(db,"products"));
+
+products=[];
+
+snapshot.forEach(docSnap=>{
+
+let p=docSnap.data();
+p.id=docSnap.id;
+products.push(p);
+
+});
+
+renderProducts();
+
+}
+
+loadProducts();
+
+
+
+function renderProducts(){
+
+let html="";
+
+products.forEach((p,i)=>{
+
+let status=p.stock?"במלאי":"לא במלאי";
+
+let className=p.stock?"instock":"outstock";
+
+html+=`
+
+<div class="product card" onclick="openProduct(${i})">
+
+<div class="status ${className}">${status}</div>
+
+<img src="${p.image||''}">
+
+<div class="name">${p.name}</div>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("gallery").innerHTML=html;
+
+}
+
+
+
+window.openProduct=function(i){
+
+let p=products[i];
+
+modal.style.display="block";
+
+modalImg.src=p.image||"";
+
+
+
+if(adminMode){
+
+modalName.innerHTML=`<input id="editName" value="${p.name}">`;
+
+modalDesc.innerHTML=`<textarea id="editDesc">${p.description}</textarea>`;
+
+modalPrice.innerHTML=`<input id="editPrice" type="number" value="${p.price}">`;
+
+adminArea.innerHTML=`
+
+<button onclick="saveChanges(${i})">שמור</button>
+
+<button onclick="toggleStock(${i})">שנה מצב מלאי</button>
+
+`;
+
+}else{
+
+modalName.innerText=p.name;
+modalDesc.innerText=p.description;
+modalPrice.innerText="₪"+p.price;
+adminArea.innerHTML="";
+
+}
+
+}
+
+
+
+window.saveChanges=async function(i){
+
+let id=products[i].id;
+
+let newName=document.getElementById("editName").value;
+let newDesc=document.getElementById("editDesc").value;
+let newPrice=document.getElementById("editPrice").value;
+
+await updateDoc(doc(db,"products",id),{
+
+name:newName,
+description:newDesc,
+price:Number(newPrice)
+
+});
+
+alert("נשמר");
+
+loadProducts();
+
+}
+
+
+
+window.toggleStock=async function(i){
+
+let id=products[i].id;
+
+await updateDoc(doc(db,"products",id),{
+
+stock:!products[i].stock
+
+});
+
+loadProducts();
+
+}
+
+
+
+window.showAddForm=function(){
+
+document.getElementById("addForm").style.display="block";
+
+}
+
+
+
+window.saveNewProduct=async function(){
+
+let name=document.getElementById("newName").value;
+let price=document.getElementById("newPrice").value;
+let desc=document.getElementById("newDesc").value;
+
+let file=document.getElementById("newImage").files[0];
+
+let reader=new FileReader();
+
+reader.onload=function(){
+
+let imageData=reader.result;
+
+addDoc(collection(db,"products"),{
+
+name:name,
+description:desc,
+price:Number(price),
+image:imageData,
+stock:true
+
+}).then(()=>{
+
+alert("המוצר נוסף");
+
+loadProducts();
+
+});
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+</script>
+
+</body>
+</html>

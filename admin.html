@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="he">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>ניהול מוצרים</title>
+
+<style>
+
+body{
+font-family:Arial;
+max-width:800px;
+margin:auto;
+padding:40px;
+}
+
+.product{
+border:1px solid #ddd;
+padding:20px;
+margin-bottom:20px;
+border-radius:10px;
+}
+
+img{
+width:120px;
+border-radius:6px;
+}
+
+input,textarea{
+width:100%;
+margin-top:5px;
+margin-bottom:10px;
+padding:6px;
+}
+
+button{
+padding:10px 20px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>עריכת מוצרים</h1>
+
+<div id="products"></div>
+
+<button onclick="save()">שמור שינויים</button>
+
+<script>
+
+let products=[]
+
+fetch("products.json")
+
+.then(r=>r.json())
+
+.then(data=>{
+
+products=data
+
+render()
+
+})
+
+
+function render(){
+
+let html=""
+
+products.forEach((p,i)=>{
+
+html+=`
+
+<div class="product">
+
+<img src="${p.image}">
+
+<h3>${p.name}</h3>
+
+<label>מחיר</label>
+
+<input type="number" value="${p.price}" onchange="updatePrice(${i},this.value)">
+
+<label>תיאור</label>
+
+<textarea onchange="updateDesc(${i},this.value)">${p.description}</textarea>
+
+</div>
+
+`
+
+})
+
+document.getElementById("products").innerHTML=html
+
+}
+
+
+function updatePrice(i,value){
+
+products[i].price=value
+
+}
+
+
+function updateDesc(i,value){
+
+products[i].description=value
+
+}
+
+
+function save(){
+
+let data=JSON.stringify(products,null,2)
+
+let blob=new Blob([data],{type:"application/json"})
+
+let a=document.createElement("a")
+
+a.href=URL.createObjectURL(blob)
+
+a.download="products.json"
+
+a.click()
+
+}
+
+</script>
+
+</body>
+
+</html>

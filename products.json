@@ -1,0 +1,55 @@
+[
+{
+"name":"קערת קרמיקה",
+"price":480,
+"description":"קערה שנעשתה על האובניים",
+"image":"images/item1.jpeg",
+"sold":false
+},
+
+{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item2.jpeg",
+"sold":false
+},
+{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item3.jpeg",
+"sold":false
+},{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item4.jpeg",
+"sold":false
+},{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item5.jpeg",
+"sold":false
+},{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item6.jpeg",
+"sold":false
+},{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item7.jpeg",
+"sold":false
+},
+{
+"name":"ספל קפה",
+"price":120,
+"description":"ספל קרמיקה בעבודת יד",
+"image":"images/item8.jpeg",
+"sold":false
+}
+]
