@@ -15,8 +15,6 @@ font-weight:300;
 letter-spacing:2px;
 }
 
-/* ===== גלריה ===== */
-
 #gallery{
 width:100%;
 }
@@ -62,41 +60,38 @@ color:green;
 color:red;
 }
 
-/* ===== מודאל עריכה ===== */
-
 .modal{
 display:none;
 position:fixed;
 top:0;
 left:0;
 width:100vw;
-height:100vh;
+height:140vh;
 background:rgba(0,0,0,0.95);
-z-index:1000;
+color:white;
 
 display:flex;
 flex-direction:column;
-}
+align-items:center;
 
-/* אזור התוכן שניתן לגלילה */
-
-.modal-content{
-flex:1;
 overflow-y:auto;
 padding:20px;
-text-align:center;
 }
-
-/* תמונת מוצר בעריכה */
 
 .modal img{
 max-width:90%;
-max-height:35vh;
+max-height:40vh;
 border-radius:10px;
 margin-bottom:20px;
 }
 
-/* שדות עריכה */
+#close{
+position:absolute;
+top:20px;
+right:40px;
+font-size:40px;
+cursor:pointer;
+}
 
 .modal input,
 .modal textarea{
@@ -107,9 +102,6 @@ margin:10px 0;
 border-radius:6px;
 border:none;
 }
-
-/* כפתורי עריכה */
-
 .modal button{
 width:90%;
 padding:14px;
@@ -117,20 +109,7 @@ font-size:18px;
 margin:10px 0;
 border:none;
 border-radius:6px;
-cursor:pointer;
 }
-
-/* כפתור סגירה */
-
-#close{
-position:sticky;
-top:0;
-font-size:35px;
-cursor:pointer;
-}
-
-/* ===== כפתורי מנהל ===== */
-
 #adminBtn{
 position:fixed;
 bottom:20px;
@@ -158,8 +137,6 @@ cursor:pointer;
 display:none;
 }
 
-/* ===== טופס הוספה ===== */
-
 #addForm{
 display:none;
 text-align:center;
@@ -172,7 +149,10 @@ padding:10px;
 margin:6px;
 }
 
-/* ===== מובייל ===== */
+button{
+cursor:pointer;
+margin:6px;
+}
 
 @media(max-width:700px){
 
