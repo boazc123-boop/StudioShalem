@@ -4,67 +4,96 @@
 <head>
 
 <meta charset="UTF-8">
-<title>סטודיו לקרמיקה</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Studio Shalem</title>
 
 <style>
 
 body{
+margin:0;
 font-family:Arial;
-text-align:center;
-background:#f6f2ec;
-margin:0
+background:#f7f3ee;
 }
 
 h1{
-padding:20px
+text-align:center;
+margin:25px 0;
+font-weight:300;
+letter-spacing:2px;
 }
 
+/* גלריה */
+
 #gallery{
-display:grid;
-grid-template-columns:repeat(auto-fit,250px);
-gap:20px;
-justify-content:center;
-padding:30px
+width:100%;
 }
 
 .product{
-cursor:pointer
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+padding:40px 0;
+cursor:pointer;
 }
 
 .product img{
-width:100%;
-height:250px;
-object-fit:cover;
+max-width:90%;
+max-height:70vh;
+object-fit:contain;
 border-radius:12px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1)
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
 }
 
 .name{
-margin-top:8px;
-font-size:18px
+margin-top:15px;
+font-size:22px;
+}
+
+.price{
+margin-top:6px;
+font-size:18px;
+color:#444;
 }
 
 .status{
-position:absolute;
-padding:5px 10px;
-border-radius:5px;
-top:10px;
-right:10px;
-color:white;
-font-size:14px
+margin-top:5px;
+font-size:14px;
 }
 
 .instock{
-background:green
+color:green;
 }
 
 .outstock{
-background:red
+color:red;
 }
 
-.card{
-position:relative
+/* מובייל */
+
+@media(max-width:700px){
+
+#gallery{
+display:flex;
+overflow-x:auto;
+scroll-snap-type:x mandatory;
+height:85vh;
 }
+
+.product{
+flex:0 0 100%;
+scroll-snap-align:center;
+padding:0;
+}
+
+.product img{
+max-height:60vh;
+}
+
+}
+
+/* חלון מוצר */
 
 .modal{
 display:none;
@@ -75,12 +104,13 @@ width:100%;
 height:100%;
 background:rgba(0,0,0,0.85);
 color:white;
-padding-top:60px
+text-align:center;
+padding-top:60px;
 }
 
 .modal img{
-max-width:400px;
-border-radius:10px
+max-width:90%;
+border-radius:10px;
 }
 
 #close{
@@ -88,7 +118,56 @@ position:absolute;
 top:20px;
 right:40px;
 font-size:40px;
-cursor:pointer
+cursor:pointer;
+}
+
+/* כפתור מנהל */
+
+#adminBtn{
+position:fixed;
+bottom:20px;
+right:20px;
+background:black;
+color:white;
+border:none;
+padding:14px;
+border-radius:50%;
+font-size:16px;
+cursor:pointer;
+}
+
+/* כפתור הוספה */
+
+#addBtn{
+position:fixed;
+bottom:80px;
+right:20px;
+background:green;
+color:white;
+border:none;
+padding:14px;
+border-radius:50%;
+font-size:18px;
+cursor:pointer;
+display:none;
+}
+
+/* טופס הוספה */
+
+#addForm{
+display:none;
+text-align:center;
+padding:20px;
+}
+
+input,textarea{
+width:80%;
+padding:10px;
+margin:6px;
+}
+
+button{
+cursor:pointer;
 }
 
 </style>
@@ -98,13 +177,15 @@ cursor:pointer
 
 <body>
 
-<button onclick="adminLogin()">כניסת מנהל</button>
-<button id="addBtn" style="display:none" onclick="showAddForm()">הוסף מוצר</button>
-
-<h1>סטודיו לקרמיקה</h1>
+<h1>Studio Shalem</h1>
 
 <div id="gallery"></div>
 
+<button id="adminBtn" onclick="adminLogin()">Admin</button>
+<button id="addBtn" onclick="showAddForm()">+</button>
+
+
+<!-- חלון מוצר -->
 
 <div id="modal" class="modal">
 
@@ -123,22 +204,23 @@ cursor:pointer
 </div>
 
 
-<div id="addForm" style="display:none;margin:20px">
+<!-- טופס הוספת מוצר -->
+
+<div id="addForm">
 
 <h3>הוספת מוצר</h3>
 
-<input id="newName" placeholder="שם מוצר"><br><br>
+<input id="newName" placeholder="שם מוצר"><br>
 
-<input id="newPrice" type="number" placeholder="מחיר"><br><br>
+<input id="newPrice" type="number" placeholder="מחיר"><br>
 
-<textarea id="newDesc" placeholder="תיאור"></textarea><br><br>
+<textarea id="newDesc" placeholder="תיאור"></textarea><br>
 
-<input type="file" id="newImage"><br><br>
+<input type="file" id="newImage" accept="image/*"><br>
 
 <button onclick="saveNewProduct()">שמור מוצר</button>
 
 </div>
-
 
 
 <script type="module">
@@ -155,8 +237,6 @@ addDoc
 }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
-
 const firebaseConfig = {
 
 apiKey:"AIzaSyCqi32tyPHflqnqvTZfBPf_SPqQdvKrq_A",
@@ -168,149 +248,129 @@ appId:"1:488962069403:web:83e7eb50756cf40436873e"
 
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-
-
-const ADMIN_PASSWORD="1234";
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
 let adminMode=false;
 let products=[];
 
+let modal=document.getElementById("modal")
+let modalImg=document.getElementById("modal-img")
+let modalName=document.getElementById("modal-name")
+let modalDesc=document.getElementById("modal-desc")
+let modalPrice=document.getElementById("modal-price")
+let adminArea=document.getElementById("adminArea")
 
+document.getElementById("close").onclick=()=>modal.style.display="none"
 
-let modal=document.getElementById("modal");
-let modalImg=document.getElementById("modal-img");
-let modalName=document.getElementById("modal-name");
-let modalDesc=document.getElementById("modal-desc");
-let modalPrice=document.getElementById("modal-price");
-let adminArea=document.getElementById("adminArea");
-
-document.getElementById("close").onclick=()=>modal.style.display="none";
-
-
-
-window.adminLogin=function(){
-
-let pass=prompt("סיסמת מנהל");
-
-if(pass===ADMIN_PASSWORD){
-
-adminMode=true;
-alert("מצב מנהל הופעל");
-document.getElementById("addBtn").style.display="inline";
-
-}else{
-
-alert("סיסמה שגויה");
-
-}
-
-}
-
-
+/* טעינת מוצרים */
 
 async function loadProducts(){
 
-const snapshot=await getDocs(collection(db,"products"));
+const snapshot=await getDocs(collection(db,"products"))
 
-products=[];
+products=[]
+
+let html=""
 
 snapshot.forEach(docSnap=>{
 
-let p=docSnap.data();
-p.id=docSnap.id;
-products.push(p);
+let p=docSnap.data()
+p.id=docSnap.id
 
-});
+products.push(p)
 
-renderProducts();
-
-}
-
-loadProducts();
-
-
-
-function renderProducts(){
-
-let html="";
-
-products.forEach((p,i)=>{
-
-let status=p.stock?"במלאי":"לא במלאי";
-
-let className=p.stock?"instock":"outstock";
+let status=p.stock?"במלאי":"לא במלאי"
+let className=p.stock?"instock":"outstock"
 
 html+=`
 
-<div class="product card" onclick="openProduct(${i})">
+<div class="product" onclick="openProduct('${p.id}')">
 
-<div class="status ${className}">${status}</div>
-
-<img src="${p.image||''}">
+<img src="${p.image}">
 
 <div class="name">${p.name}</div>
 
+<div class="price">₪${p.price}</div>
+
+<div class="status ${className}">${status}</div>
+
 </div>
 
-`;
+`
 
-});
+})
 
-document.getElementById("gallery").innerHTML=html;
+document.getElementById("gallery").innerHTML=html
 
 }
 
+loadProducts()
 
+/* כניסת מנהל */
 
-window.openProduct=function(i){
+window.adminLogin=function(){
 
-let p=products[i];
+let pass=prompt("סיסמת מנהל")
 
-modal.style.display="block";
+if(pass==="1234"){
 
-modalImg.src=p.image||"";
+adminMode=true
 
+alert("מצב מנהל הופעל")
 
+document.getElementById("addBtn").style.display="block"
+
+}
+
+}
+
+/* פתיחת מוצר */
+
+window.openProduct=function(id){
+
+let p=products.find(x=>x.id===id)
+
+modal.style.display="block"
+
+modalImg.src=p.image
 
 if(adminMode){
 
-modalName.innerHTML=`<input id="editName" value="${p.name}">`;
+modalName.innerHTML=`<input id="editName" value="${p.name}">`
 
-modalDesc.innerHTML=`<textarea id="editDesc">${p.description}</textarea>`;
+modalDesc.innerHTML=`<textarea id="editDesc">${p.description}</textarea>`
 
-modalPrice.innerHTML=`<input id="editPrice" type="number" value="${p.price}">`;
+modalPrice.innerHTML=`<input id="editPrice" type="number" value="${p.price}">`
 
 adminArea.innerHTML=`
 
-<button onclick="saveChanges(${i})">שמור</button>
+<button onclick="saveChanges('${id}')">שמור</button>
 
-<button onclick="toggleStock(${i})">שנה מצב מלאי</button>
+<button onclick="toggleStock('${id}')">שנה מלאי</button>
 
-`;
+`
 
-}else{
+}
 
-modalName.innerText=p.name;
-modalDesc.innerText=p.description;
-modalPrice.innerText="₪"+p.price;
-adminArea.innerHTML="";
+else{
+
+modalName.innerText=p.name
+modalDesc.innerText=p.description
+modalPrice.innerText="₪"+p.price
+adminArea.innerHTML=""
 
 }
 
 }
 
+/* שמירת עריכה */
 
+window.saveChanges=async function(id){
 
-window.saveChanges=async function(i){
-
-let id=products[i].id;
-
-let newName=document.getElementById("editName").value;
-let newDesc=document.getElementById("editDesc").value;
-let newPrice=document.getElementById("editPrice").value;
+let newName=document.getElementById("editName").value
+let newDesc=document.getElementById("editDesc").value
+let newPrice=document.getElementById("editPrice").value
 
 await updateDoc(doc(db,"products",id),{
 
@@ -318,53 +378,53 @@ name:newName,
 description:newDesc,
 price:Number(newPrice)
 
-});
+})
 
-alert("נשמר");
+alert("נשמר")
 
-loadProducts();
+loadProducts()
 
 }
 
+/* שינוי מלאי */
 
+window.toggleStock=async function(id){
 
-window.toggleStock=async function(i){
-
-let id=products[i].id;
+let product=products.find(p=>p.id===id)
 
 await updateDoc(doc(db,"products",id),{
 
-stock:!products[i].stock
+stock:!product.stock
 
-});
+})
 
-loadProducts();
+loadProducts()
 
 }
 
-
+/* פתיחת טופס הוספה */
 
 window.showAddForm=function(){
 
-document.getElementById("addForm").style.display="block";
+document.getElementById("addForm").style.display="block"
 
 }
 
+/* שמירת מוצר חדש */
 
+window.saveNewProduct=function(){
 
-window.saveNewProduct=async function(){
+let name=document.getElementById("newName").value
+let price=document.getElementById("newPrice").value
+let desc=document.getElementById("newDesc").value
 
-let name=document.getElementById("newName").value;
-let price=document.getElementById("newPrice").value;
-let desc=document.getElementById("newDesc").value;
+let file=document.getElementById("newImage").files[0]
 
-let file=document.getElementById("newImage").files[0];
-
-let reader=new FileReader();
+let reader=new FileReader()
 
 reader.onload=function(){
 
-let imageData=reader.result;
+let imageData=reader.result
 
 addDoc(collection(db,"products"),{
 
@@ -376,19 +436,22 @@ stock:true
 
 }).then(()=>{
 
-alert("המוצר נוסף");
+alert("המוצר נוסף")
 
-loadProducts();
+loadProducts()
 
-});
+document.getElementById("addForm").style.display="none"
 
-};
+})
 
-reader.readAsDataURL(file);
+}
+
+reader.readAsDataURL(file)
 
 }
 
 </script>
 
 </body>
+
 </html>
