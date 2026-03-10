@@ -16,17 +16,17 @@
 
 <h1>Studio Shalem</h1>
 
-<a id="whatsappBtn" href="https://wa.me/972XXXXXXXXX" target="_blank">💬</a>
-
 <div id="gallery"></div>
 
 <button id="adminBtn" onclick="adminLogin()">A</button>
 <button id="addBtn" onclick="showAddForm()">+</button>
 
 
+<!-- חלון עריכה -->
+
 <div id="modal" class="modal">
 
-<div class="modal-content">
+<div class="modal-card">
 
 <span id="close">✕</span>
 
@@ -47,6 +47,8 @@
 </div>
 
 
+<!-- טופס הוספת מוצר -->
+
 <div id="addForm">
 
 <h3>הוספת מוצר</h3>
@@ -64,6 +66,7 @@
 </div>
 
 
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -79,6 +82,7 @@ deleteDoc
 }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+
 const firebaseConfig = {
 
 apiKey:"AIzaSyCqi32tyPHflqnqvTZfBPf_SPqQdvKrq_A",
@@ -90,8 +94,8 @@ appId:"1:488962069403:web:83e7eb50756cf40436873e"
 
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 let adminMode=false;
 let products=[];
@@ -139,6 +143,7 @@ products.push(p)
 
 let status=p.stock?"במלאי":"לא במלאי"
 let className=p.stock?"instock":"outstock"
+
 html+=`
 
 <div class="product" ${adminMode ? `onclick="openProduct('${p.id}')"` : ""}>
@@ -176,6 +181,8 @@ alert("מצב מנהל הופעל")
 
 document.getElementById("addBtn").style.display="block"
 
+loadProducts()
+
 }
 
 }
@@ -185,16 +192,12 @@ window.openProduct=function(id){
 
 let p=products.find(x=>x.id===id)
 
-modal.style.display="block"
+modal.style.display="flex"
 document.body.classList.add("modal-open")
 
 modalImg.src=p.image
 
-let stockText=p.stock?"במלאי":"לא במלאי"
-
-modalStock.innerText=stockText
-
-if(adminMode){
+modalStock.innerText=p.stock?"במלאי":"לא במלאי"
 
 modalName.innerHTML=`<input id="editName" value="${p.name}">`
 
@@ -213,17 +216,6 @@ adminArea.innerHTML=`
 <button onclick="deleteProduct('${id}')">מחק מוצר</button>
 
 `
-
-}
-
-else{
-
-modalName.innerText=p.name
-modalDesc.innerText=p.description
-modalPrice.innerText="₪"+p.price
-adminArea.innerHTML=""
-
-}
 
 }
 
