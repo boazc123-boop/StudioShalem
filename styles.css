@@ -197,25 +197,6 @@ cursor:pointer;
 margin:6px;
 }
 
-@media(max-width:700px){
-
-#gallery{
-display:flex;
-overflow-x:auto;
-scroll-snap-type:x mandatory;
-height:85vh;
-}
-
-.product{
-flex:0 0 100%;
-scroll-snap-align:center;
-padding:0;
-}
-
-.product img{
-max-height:60vh;
-}
-
 #studio{
 height:100vh;
 background-image:url("images/studio.jpeg");
@@ -252,6 +233,25 @@ font-size:40px;
 cursor:pointer;
 animation:bounce 2s infinite;
 }
+@media(max-width:700px){
+
+#gallery{
+display:flex;
+overflow-x:auto;
+scroll-snap-type:x mandatory;
+height:85vh;
+}
+
+.product{
+flex:0 0 100%;
+scroll-snap-align:center;
+padding:0;
+}
+
+.product img{
+max-height:60vh;
+}
+
 
 @keyframes bounce{
 0%,20%,50%,80%,100%{transform:translateY(0);}
