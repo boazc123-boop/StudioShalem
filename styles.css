@@ -29,14 +29,14 @@ margin-top:30px;
 
 #whatsappBtn{
 position:fixed;
-top:20px;
+bottom:20px;
 right:20px;
 z-index:2000;
 }
 
 #whatsappBtn img{
-width:32px;
-height:32px;
+width:80px;
+height:80px;
 display:block;
 }
 .studio-logo{
@@ -140,20 +140,23 @@ border-radius:6px;
 }
 #adminBtn{
 position:fixed;
-bottom:20px;
+top:20px;
 right:20px;
 background:black;
 color:white;
 border:none;
 padding:14px;
+
+width:20px;
+height:20px;
 border-radius:50%;
-font-size:16px;
+font-size:14px;
 cursor:pointer;
 }
 
 #addBtn{
 position:fixed;
-bottom:80px;
+top:80px;
 right:20px;
 background:green;
 color:white;
