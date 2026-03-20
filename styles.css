@@ -1030,8 +1030,8 @@ a {
 #whatsappBtn {
   position: fixed;
   bottom: 28px;
-  left: 28px;
-  right: auto;
+  left: auto;
+  right: 28px;
   z-index: 2000;
   text-align: center;
   text-decoration: none;
