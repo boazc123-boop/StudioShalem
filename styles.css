@@ -712,7 +712,8 @@ a {
 .product img {
   width: 100%;
   height: 280px;
-  object-fit: cover;
+  object-fit: contain;
+  background: whitesmoke;
   transition: transform 0.8s var(--ease-premium);
 }
 
