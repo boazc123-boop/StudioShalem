@@ -10,7 +10,7 @@
 
   <title>סטודיו שלם | קרמיקה בעבודת יד</title>
 
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="stylesTST.css">
   <link rel="icon" type="image/png" href="images/LOGO1.png">
 
   <!-- Preload hero image -->
@@ -262,7 +262,7 @@
   <footer class="site-footer">
     <img src="images/LOGO1.png" class="footer-logo" alt="סטודיו שלם">
     <p>סטודיו שלם · קרמיקה בעבודת יד · מורשת, משגב</p>
-    <p style="margin-top:12px; font-size:12px; opacity:0.5;">© 2025 כל הזכויות שמורות</p>
+    <p style="margin-top:12px; font-size:12px; opacity:0.5;">© 2026 כל הזכויות שמורות</p>
   </footer>
 
   <!-- ═══════════ FLOATING WHATSAPP ═══════════ -->
@@ -274,9 +274,9 @@
   </a>
 
   <!-- ═══════════ ADMIN BUTTONS ═══════════ -->
-  <button id="adminBtn" onclick="adminLogin()">A</button>
+ <button id="adminBtn" onclick="adminLogin()">A</button>
   <button id="addBtn" onclick="showAddForm()">+</button>
-
+  <button id="discountBtn" onclick="setGlobalDiscount()">%</button>
   <!-- ═══════════ MODAL (Admin) ═══════════ -->
   <div id="modal" class="modal">
     <div class="modal-card">
@@ -304,14 +304,16 @@
   <script type="module">
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
+ import {
     getFirestore,
     collection,
     getDocs,
     doc,
     updateDoc,
     addDoc,
-    deleteDoc
+    deleteDoc,
+    setDoc,
+    getDoc
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -328,6 +330,7 @@
 
   let adminMode = false;
   let products = [];
+  let globalDiscount = 0; // משתנה לשמירת ההנחה
   let imageIndex = 0;
   let imageList = [];
 
@@ -350,7 +353,20 @@
     if (e.key === "Escape") closeModal();
   });
 
-  async function loadProducts() {
+ async function loadProducts() {
+  
+    // 1. קודם כל, נבדוק אם יש הנחה פעילה במסד הנתונים
+    try {
+      const settingsDoc = await getDoc(doc(db, "settings", "store"));
+      if (settingsDoc.exists()) {
+        globalDiscount = settingsDoc.data().discount || 0;
+      } else {
+        globalDiscount = 0;
+      }
+    } catch (e) {
+      console.log("Discount not found yet");
+    }
+
     const snapshot = await getDocs(collection(db, "products"));
     products = [];
     let html = "";
@@ -363,13 +379,26 @@
       let status = p.stock ? "במלאי" : "אזל";
       let className = p.stock ? "instock" : "outstock";
 
+      // 2. חישוב המחיר וההנחה (כולל העיגול כלפי מטה)
+      let priceHtml = `<div class="price">₪${p.price}</div>`;
+      
+      if (globalDiscount > 0) {
+        let discountedPrice = Math.floor(p.price * (1 - (globalDiscount / 100)));
+        priceHtml = `
+          <div class="price-container">
+            <span class="price-original">₪${p.price}</span>
+            <span class="price">₪${discountedPrice}</span>
+          </div>
+        `;
+      }
+
       html += `
         <div class="product" ${adminMode ? `onclick="openProduct('${p.id}')"` : ""}>
           <img src="${p.image}" alt="${p.name}" loading="lazy">
           <div class="product-info">
             <div class="name">${p.name}</div>
             <div class="description">${p.description}</div>
-            <div class="price">₪${p.price}</div>
+            ${priceHtml}
             <div class="status ${className}">${status}</div>
           </div>
         </div>
@@ -378,18 +407,6 @@
 
     document.getElementById("gallery").innerHTML = html;
   }
-
-  loadProducts();
-
-  window.adminLogin = function() {
-    let pass = prompt("סיסמת מנהל");
-    if (pass === "Hadar7666") {
-      adminMode = true;
-      alert("מצב מנהל הופעל");
-      document.getElementById("addBtn").style.display = "flex";
-      loadProducts();
-    }
-  };
 
   window.openProduct = function(id) {
     let p = products.find(x => x.id === id);
@@ -483,11 +500,42 @@
     }
     modalImg.src = imageList[imageIndex];
   }
-
+window.adminLogin = function() {
+    let pass = prompt("סיסמת מנהל");
+    if (pass === "Hadar7666") {
+      adminMode = true;
+      alert("מצב מנהל הופעל");
+      document.getElementById("addBtn").style.display = "flex";
+      document.getElementById("discountBtn").style.display = "flex";
+      loadProducts();
+    }
+  };
   window.showAddForm = function() {
     document.getElementById("addForm").style.display = "block";
   };
+window.setGlobalDiscount = async function() {
+    let pct = prompt("הזני אחוז הנחה לכל האתר (למשל 15, להסרת המבצע הקישי 0):", globalDiscount);
+    if (pct === null) return; // אם היא לחצה ביטול
+    
+    let discountValue = parseInt(pct);
+    if (isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
+      alert("אנא הזיני מספר חוקי בין 0 ל-100");
+      return;
+    }
 
+    // שמירה בפיירבייס
+    await setDoc(doc(db, "settings", "store"), {
+      discount: discountValue
+    }, { merge: true });
+
+    if (discountValue > 0) {
+      alert(`הנחה של ${discountValue}% הופעלה בהצלחה על כל האתר!`);
+    } else {
+      alert("ההנחה הוסרה בהצלחה. המחירים חזרו לקדמותם.");
+    }
+    
+    loadProducts(); // רענון מיידי של הכלים כדי להציג את העדכון
+  };
   window.saveNewProduct = function() {
     let name = document.getElementById("newName").value;
     let price = document.getElementById("newPrice").value;
